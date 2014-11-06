@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.version       = M2TSParser::VERSION
   spec.authors       = ["sawaken"]
   spec.email         = ["sasasawada@gmail.com"]
-  spec.summary       = %q{An Elegant MPEG2-TS file Parser.}
+  spec.summary       = %q{An elegant MPEG2-TS file Parser.}
   spec.homepage      = ""
   spec.license       = "MIT"
 
