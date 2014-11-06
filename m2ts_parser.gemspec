@@ -1,14 +1,14 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'ruby_m2ts_parser/version'
+require 'm2ts_parser/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "m2ts_parser"
   spec.version       = M2TSParser::VERSION
   spec.authors       = ["sawaken"]
   spec.email         = ["sasasawada@gmail.com"]
-  spec.summary       = %q{An Elegant MPEG2-TS Parser.}
+  spec.summary       = %q{An Elegant MPEG2-TS file Parser.}
   spec.homepage      = ""
   spec.license       = "MIT"
 
