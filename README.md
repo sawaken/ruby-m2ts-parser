@@ -7,7 +7,7 @@ TODO: Write a gem description
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'ruby_m2ts_parser'
+gem 'm2ts_parser'
 ```
 
 And then execute:
@@ -16,7 +16,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install ruby_m2ts_parser
+    $ gem install m2ts_parser
 
 ## Usage
 
@@ -24,7 +24,7 @@ TODO: Write usage instructions here
 
 ## Contributing
 
-1. Fork it ( https://github.com/[my-github-username]/ruby_m2ts_parser/fork )
+1. Fork it ( https://github.com/[my-github-username]/ruby-m2ts-parser/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
