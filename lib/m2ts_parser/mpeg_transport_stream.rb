@@ -1,5 +1,11 @@
 require 'binary_parser'
 
+
+
+# 2.4.3.1 Transport Stream                 (Table 2-1)
+# 2.4.3.2 Transport Stream packet layer    (Table 2-2)
+# 2.4.3.4 Adaptation field                 (Table 2-6)
+
 module M2TSParser
   class MPEGTransportStream < BinaryParser::StreamTemplateBase
 
@@ -44,7 +50,7 @@ module M2TSParser
 
           IF E{ transport_private_data_flag == 1 } do
             data :transport_private_data_length,              UInt, 8
-            data :private_data_bytes,                         Binary, var(:transport_private_data_length) * 8
+            data :private_data_bytes, Binary, var(:transport_private_data_length) * 8
           end
 
           IF E{ adaptation_field_extension_flag == 1 } do
@@ -74,10 +80,10 @@ module M2TSParser
               data :marker_bit3,                              UInt, 1
             end
 
-            data :reserved5,                                  Binary, var(:adaptation_field_extension_length) * 8 - position
+            data :reserved5, Binary, var(:adaptation_field_extension_length) * 8 - position
           end
 
-          data :stuffing_bytes,                               Binary, var(:adaptation_field_length) * 8 - position
+          data :stuffing_bytes, Binary, var(:adaptation_field_length) * 8 - position
         end
       end
 
@@ -89,13 +95,5 @@ module M2TSParser
     def rest?
       non_proceed_get_next && non_proceed_get_next.sync_byte == 0x47
     end
-  end
-end
-
-File.open('16ch20sec.ts', 'rb') do |f|
-  stream = M2TSParser::MPEGTransportStream.new(f)#.filter{|packet| packet.pid == 0x12}
-  while stream.rest?
-    packet = stream.get_next
-    puts "sync_byte: #{packet.sync_byte}, cc: #{packet.continuity_counter}, af_len: #{packet.adaptation_field_length}"
   end
 end
