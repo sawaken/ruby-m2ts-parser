@@ -54,6 +54,7 @@ module M2TSParser
   # 5.2.7 イベント情報テーブル (EIT) (Event Information)
   class EventInformationSection < BinaryParser::TemplateBase
     Def do
+      data :pointer_field,               UInt, 8
       data :table_id,                    UInt, 8
       data :section_syntax_indicator,    UInt, 1
       data :reserved_future_use,         UInt, 1
@@ -70,7 +71,7 @@ module M2TSParser
       data :segment_last_section_number, UInt, 8
       data :last_table_id,               UInt, 8
 
-      SPEND var(:section_length) * 8 - (position - 24) - len(:crc_32), :events do 
+      SPEND var(:section_length) * 8 - (position - 24) - 32, :events do 
         data :event_id,                  UInt, 16
         data :start_time,                UInt, 40
         data :duration,                  UInt, 24

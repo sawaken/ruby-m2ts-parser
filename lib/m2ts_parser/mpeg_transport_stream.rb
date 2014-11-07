@@ -1,7 +1,3 @@
-require 'binary_parser'
-
-
-
 # 2.4.3.1 Transport Stream                 (Table 2-1)
 # 2.4.3.2 Transport Stream packet layer    (Table 2-2)
 # 2.4.3.4 Adaptation field                 (Table 2-6)
