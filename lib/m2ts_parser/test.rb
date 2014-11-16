@@ -1,11 +1,23 @@
 require "binary_parser"
+require "tsparser"
 require "./mpeg_transport_stream.rb"
 
 require "./descriptor.rb"
 require "./table.rb"
+require "./crc32.rb"
 
 
 module M2TSParser
+
+  EventInformationSection.include(CRC32Decoder)
+
+  class PF < BinaryParser::TemplateBase
+    Def do
+      data :pointer_field, UInt,                    8
+      data :eit,           EventInformationSection, rest
+    end
+  end
+      
 
   File.open('16ch20sec.ts', 'rb') do |f|
     stream = MPEGTransportStream.new(f).filter{|packet| packet.pid == 0x12}
@@ -16,15 +28,14 @@ module M2TSParser
       if valid
         data = packets.map{|p| p.data_bytes.to_s}.inject{|acc, p| acc + p}
         if data && data.length > 0
-          eit = EventInformationSection.new(data)
+          eit = PF.new(data).eit
+          eit.show(false)
+          p eit.check_crc32
+
           
-          puts "#{packets.size} packets (#{valid}), table_id=#{eit.table_id}, CNI=#{eit.current_next_indicator.to_i}, SEC_NUM=#{eit.section_number}, Last_SEC_NUM=#{eit.last_section_number}, real=#{eit.binary_bit_length/8}byte, require=#{eit.structure_bit_length/8}byte, enough=#{eit.hold_enough_binary?}."
+#          puts "#{packets.size} packets (#{valid}), table_id=#{eit.table_id}, CNI=#{eit.current_next_indicator.to_i}, SEC_NUM=#{eit.section_number}, Last_SEC_NUM=#{eit.last_section_number}, real=#{eit.binary_bit_length/8}byte, require=#{eit.structure_bit_length/8}byte, enough=#{eit.hold_enough_binary?}."
         end
       end
-
-      #packet.show(true)
-      #puts "sync_byte: #{packet.sync_byte}, cc: #{packet.continuity_counter}, af_len: #{packet.adaptation_field_length}"
     end
   end
 end
-  
