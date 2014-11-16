@@ -31,9 +31,6 @@ module M2TSParser
           eit = PF.new(data).eit
           eit.show(false)
           p eit.check_crc32
-
-          
-#          puts "#{packets.size} packets (#{valid}), table_id=#{eit.table_id}, CNI=#{eit.current_next_indicator.to_i}, SEC_NUM=#{eit.section_number}, Last_SEC_NUM=#{eit.last_section_number}, real=#{eit.binary_bit_length/8}byte, require=#{eit.structure_bit_length/8}byte, enough=#{eit.hold_enough_binary?}."
         end
       end
     end
