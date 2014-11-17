@@ -1,4 +1,4 @@
-require "binary_parser"
+require "../../../ruby-binary-parser/lib/binary_parser.rb"
 require "tsparser"
 require "./mpeg_transport_stream.rb"
 
