@@ -29,7 +29,7 @@ module M2TSParser
         data = packets.map{|p| p.data_bytes.to_s}.inject{|acc, p| acc + p}
         if data && data.length > 0
           eit = PF.new(data).eit
-          eit.show(false)
+          eit.show(true)
           p eit.check_crc32
         end
       end
