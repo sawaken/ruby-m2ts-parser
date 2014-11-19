@@ -51,7 +51,7 @@ module M2TSParser
 
   # 5.2.6 サービス記述テーブル (SDT) (Service Description Table)
 
-  # 5.2.7 イベント情報テーブル (EIT) (Event Information)
+  # 5.2.7 イベント情報テーブル (EIT) (Event Information Table)
   class EventInformationSection < BinaryParser::TemplateBase
     Def do
       data :table_id,                    UInt, 8

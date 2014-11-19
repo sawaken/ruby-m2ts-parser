@@ -1,20 +1,5 @@
 # -*- coding: utf-8 -*-
 module M2TSParser
-  module Descriptor
-    def self.new(binary, parent_scope=nil)
-      descriptor_tag = binary.sub(:byte_length => 1).to_i
-      case descriptor_tag
-      when false
-        BouquetNameDescriptor.new(binary)
-      when 0x50
-        ComponentDescriptor.new(binary)
-      when 0x4d
-        ShortEventDescriptor.new(binary)
-      else
-        UndefinedDescriptor.new(binary)
-      end
-    end
-  end        
 
   class CountryCode < BinaryParser::TemplateBase
     Def do
@@ -27,7 +12,14 @@ module M2TSParser
   end
 
   class ARIBString < BinaryParser::TemplateBase
-    
+    def content_description
+      if to_s
+        arib_str = TSparser::AribString.new(TSparser::Binary.new(to_s))
+        return arib_str.to_utf_8
+      else
+        return ""
+      end
+    end
   end
 
   # 6.2.1 ブーケ名記述子 (Bouquet name descriptor)
@@ -53,7 +45,7 @@ module M2TSParser
     Def do
       data :descriptor_tag,              UInt, 8
       data :descriptor_length,           UInt, 8
-      data :reserved_future_use1,        UInt, 4
+      data :reserved_future_use,         UInt, 4
       data :stream_content,              UInt, 4
       data :component_type,              UInt, 8
       data :component_tag,               UInt, 8
@@ -82,7 +74,7 @@ module M2TSParser
       data :descriptor_tag,            UInt, 8
       data :descriptor_length,         UInt, 8
       data :country_availability_flag, UInt, 1
-      data :reserved_future_use2,      UInt, 1
+      data :reserved_future_use,       UInt, 1
       SPEND var(:descriptor_length) * 8, :country_codes, CountryCode
     end
   end
@@ -146,4 +138,18 @@ module M2TSParser
       data :entity,            Binary, var(:descriptor_length) * 8
     end
   end
+
+  # 記述子セレクター
+  module Descriptor
+    DescriptorMapping = {
+      0x50 => ComponentDescriptor,
+      0x4d => ShortEventDescriptor,
+    }
+    DescriptorMapping.default = UndefinedDescriptor
+      
+    def self.new(binary, parent_scope=nil)
+      descriptor_tag = binary.sub(:byte_length => 1).to_i
+      return DescriptorMapping[descriptor_tag].new(binary)
+    end
+  end        
 end
