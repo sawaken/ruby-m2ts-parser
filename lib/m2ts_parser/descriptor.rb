@@ -403,13 +403,76 @@ module M2TSParser
       data :descriptor_tag,            UInt, 8
       data :descriptor_length,         UInt, 8
       data :country_availability_flag, UInt, 1
-      data :reserved_future_use,       UInt, 1
-      SPEND var(:descriptor_length) * 8, :country_codes, CountryCode
+      data :reserved_future_use,       UInt, 7
+      SPEND var(:descriptor_length) * 8 - 8, :country_codes, CountryCode
     end
   end
 
   # 6.2.6 衛星分配システム記述子 (Satellite delivery system descriptor)
+  class SatelliteDeliverySystemDescriptor < BinaryParser::TemplateBase
+    class Polarisation < BinaryParser::TemplateBase
 
+    end
+
+    class Modulation < BinaryParser::TemplateBase
+
+    end
+
+    # 表6－11 FEC（内符号）による定義
+    class FEC < BinaryParser::TemplateBase
+      FECMapping = {
+        0b0000 => "未定義",
+        0b0001 => "符号化率1/2",
+        0b0010 => "符号化率2/3",
+        0b0011 => "符号化率3/4",
+        0b0100 => "符号化率5/6",
+        0b0101 => "符号化率7/8",
+        0b1000 => "広帯域衛星デジタル放送方式(TMCC信号参照)",
+        0b1001 => "2.6GHz帯衛星デジタル音声放送方式（パイロットチャンネル参照）",
+        0b1010 => "高度狭帯域CSデジタル放送方式（フィジカルレイヤヘッダ参照）",
+        0b1011 => "高度広帯域衛星デジタル放送方式（TMCC信号参照）",
+        0b1111 => "内符号なし",
+      }
+
+      Def do
+        data :code, UInt, 4
+      end
+
+      def content_description
+        to_s
+      end
+
+      def to_s
+        FECMapping[code.to_i].to_s
+      end
+    end
+
+    class BCD < BinaryParser::TemplateBase
+      Def do
+        SPEND rest, :decimals, UInt4
+      end
+
+      def to_i
+        decimals.inject(0){|acc, n| acc * 10 + n}
+      end
+
+      def content_description
+        to_i.to_s
+      end
+    end
+
+    Def do
+      data :descriptor_tag,            UInt, 8
+      data :descriptor_length,         UInt, 8
+      data :frequency,                  BCD, 32
+      data :orbital_position,           BCD, 16
+      data :west_east_flag,            UInt, 1
+      data :polarisation,      Polarisation, 2
+      data :modulation,          Modulation, 5
+      data :symbol_rate,                BCD, 28
+      data :fec_inner,                  FEC, 4
+    end
+  end
 
   # 6.2.7 拡張形式イベント記述子 (Extended event descriptor)
 
