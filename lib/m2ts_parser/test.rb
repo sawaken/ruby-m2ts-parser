@@ -4,12 +4,12 @@ require "./mpeg_transport_stream.rb"
 
 require "./descriptor.rb"
 require "./table.rb"
-require "./crc32.rb"
+require "./appendix/crc32.rb"
 
 
 module M2TSParser
 
-  EventInformationSection.include(CRC32Decoder)
+  EventInformationSection.include(Appendix::CRC32Decoder)
 
   class PF < BinaryParser::TemplateBase
     Def do
