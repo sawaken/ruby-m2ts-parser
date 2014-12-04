@@ -1,25 +1,7 @@
-require "../../../ruby-binary-parser/lib/binary_parser.rb"
-require "tsparser"
-require "./mpeg_transport_stream.rb"
-
-
-require "./descriptor.rb"
-require "./table.rb"
-require "./appendix/crc32.rb"
-
+# -*- coding: utf-8 -*-
+require '../m2ts_parser.rb'
 
 module M2TSParser
-
-  EventInformationSection.include(Appendix::CRC32Decoder)
-
-  class PF < BinaryParser::TemplateBase
-    Def do
-      data :pointer_field, UInt,                    8
-      data :eit,           EventInformationSection, rest
-    end
-  end
-      
-
   File.open('16ch20sec.ts', 'rb') do |f|
     stream = MPEGTransportStream.new(f).filter{|packet| packet.pid == 0x12}
     while stream.rest?
@@ -29,7 +11,7 @@ module M2TSParser
       if valid
         data = packets.map{|p| p.data_bytes.to_s}.inject{|acc, p| acc + p}
         if data && data.length > 0
-          eit = PF.new(data).eit
+          eit = TableSelector.new(data).section
           eit.show(true)
           p eit.check_crc32
         end

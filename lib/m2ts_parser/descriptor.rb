@@ -1,51 +1,12 @@
 # -*- coding: utf-8 -*-
 module M2TSParser
-
-  class Code < BinaryParser::TemplateBase
-    def to_s
-      code.to_s
-    end
-
-    def content_description
-      to_s
-    end
-
-    def names
-      []
-    end
-  end
-
-  class LanguageCode < Code
-    Def do
-      data :code, Binary, 24
-    end
-  end
-
-  class CountryCode < Code
-    Def do
-      data :code, Binary, 24
-    end
-  end
-
-  class ARIBString < BinaryParser::TemplateBase
-    def content_description
-      if to_s
-        arib_str = TSparser::AribString.new(TSparser::Binary.new(to_s))
-        return arib_str.to_utf_8
-      else
-        return ""
-      end
-    end
-  end
-
-
   # 6.2.1 ブーケ名記述子 (Bouquet name descriptor)
   # ※ bouquet［ブーケ］：放送事業者から1 つのものとして提供されるサービス（編成チャンネル）の集合。
   class BouquetNameDescriptor < BinaryParser::TemplateBase
     Def do
-      data :descriptor_tag,          UInt, 8
-      data :descriptor_length,       UInt, 8
-      data :chars,             ARIBString, var(:descriptor_length) * 8
+      data :descriptor_tag,                    UInt, 8
+      data :descriptor_length,                 UInt, 8
+      data :chars,             Appendix::ARIBString, var(:descriptor_length) * 8
     end
   end
 
@@ -60,7 +21,7 @@ module M2TSParser
 
       # この16 ビットのフィールドは、CA システムを識別する。
       # このフィールド値の割当ては、標準化機関の規定による。(付録M 参照)
-      SPEND var(:descriptor_length) * 8, :ca_system_ids, CASystemId
+      SPEND var(:descriptor_length) * 8, :ca_system_ids, Appendix::CASystemId
     end
   end
 
@@ -69,14 +30,14 @@ module M2TSParser
   #    例えば、映像、音声、文字、各種データなど。
   class ComponentDescriptor < BinaryParser::TemplateBase
     Def do
-      data :descriptor_tag,                UInt, 8
-      data :descriptor_length,             UInt, 8
-      data :reserved_future_use,           UInt, 4
-      data :stream_content,                UInt, 4
-      data :component_type,                UInt, 8
-      data :component_tag,                 UInt, 8
-      data :iso_639_language_code, LanguageCode, 24
-      data :text,                    ARIBString, var(:descriptor_length) * 8 - 48
+      data :descriptor_tag,                        UInt, 8
+      data :descriptor_length,                     UInt, 8
+      data :reserved_future_use,                   UInt, 4
+      data :stream_content,                        UInt, 4
+      data :component_type,                        UInt, 8
+      data :component_tag,                         UInt, 8
+      data :iso_639_language_code,         LanguageCode, 24
+      data :text,                  Appendix::ARIBString, var(:descriptor_length) * 8 - 48
     end
 
     # ARIB-STD-B10 第2部 表6-5 「コンポーネント内容とコンポーネント種別」に従う定義
@@ -193,11 +154,11 @@ module M2TSParser
       end
 
       def genre1
-        ContentNibbleMapping[content_nibble_level_1.to_i].first
+        Appendix::ContentNibbleMapping[content_nibble_level_1.to_i].first
       end
 
       def genre2
-        ContentNibbleMapping[content_nibble_level_1.to_i][1][content_nibble_level_2.to_i].to_s
+        Appendix::ContentNibbleMapping[content_nibble_level_1.to_i][1][content_nibble_level_2.to_i].to_s
       end
 
       def content_description
@@ -333,13 +294,13 @@ module M2TSParser
   #    必要に応じ、一番組中の一コーナーを指すこともできる。
   class ShortEventDescriptor < BinaryParser::TemplateBase
     Def do
-      data :descriptor_tag,                UInt, 8
-      data :descriptor_length,             UInt, 8
-      data :iso_639_language_code, LanguageCode, 24
-      data :event_name_length,             UInt, 8
-      data :event_name,              ARIBString, var(:event_name_length) * 8
-      data :text_length,                   UInt, 8
-      data :text,                    ARIBString, var(:text_length) * 8
+      data :descriptor_tag,                        UInt, 8
+      data :descriptor_length,                     UInt, 8
+      data :iso_639_language_code,         LanguageCode, 24
+      data :event_name_length,                     UInt, 8
+      data :event_name,            Appendix::ARIBString, var(:event_name_length) * 8
+      data :text_length,                           UInt, 8
+      data :text,                  Appendix::ARIBString, var(:text_length) * 8
     end
   end
 
