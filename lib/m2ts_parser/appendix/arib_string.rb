@@ -12,8 +12,12 @@ module M2TSParser
       require 'tsparser'
       def content_description
         if to_s
-          arib_str = TSparser::AribString.new(TSparser::Binary.new(to_s))
-          return arib_str.to_utf_8
+          begin
+            arib_str = TSparser::AribString.new(TSparser::Binary.new(to_s))
+            return arib_str.to_utf_8
+          rescue
+            return "error"
+          end
         else
           return ""
         end

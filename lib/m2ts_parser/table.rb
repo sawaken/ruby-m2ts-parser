@@ -74,12 +74,12 @@ module M2TSParser
       data :last_table_id,               UInt, 8
 
       SPEND var(:section_length) * 8 - 88 - 32, :events do 
-        data :event_id,                  UInt, 16
-        data :start_time,                UInt, 40
-        data :duration,                  UInt, 24
-        data :running_status,            UInt, 3
-        data :free_ca_mode,              UInt, 1
-        data :descriptors_loop_length,   UInt, 12
+        data :event_id,                             UInt, 16
+        data :start_time,             Appendix::AribTime, 40
+        data :duration,           Appendix::AribDuration, 24
+        data :running_status,                       UInt, 3
+        data :free_ca_mode,                         UInt, 1
+        data :descriptors_loop_length,              UInt, 12
         SPEND var(:descriptors_loop_length) * 8, :descriptors, Descriptor
       end
 

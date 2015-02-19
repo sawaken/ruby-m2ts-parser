@@ -253,18 +253,35 @@ module M2TSParser
     Def do
       data :descriptor_tag,            UInt, 8
       data :descriptor_length,         UInt, 8
-      data :frequency,               BCD[5], 32
-      data :orbital_position,        BCD[1], 16
+      data :frequency,               BCD_f5, 32
+      data :orbital_position,        BCD_f1, 16
       data :west_east_flag,            UInt, 1
       data :polarisation,      Polarisation, 2
       data :modulation,          Modulation, 5
-      data :symbol_rate,             BCD[4], 28
+      data :symbol_rate,             BCD_f4, 28
       data :fec_inner,                  FEC, 4
     end
   end
 
   # 6.2.7 拡張形式イベント記述子 (Extended event descriptor)
-
+  class ExtendedEventDescriptor < BinaryParser::TemplateBase
+    Def do
+      data :descriptor_tag,                          UInt, 8
+      data :descriptor_length,                       UInt, 8
+      data :descriptor_number,                       UInt, 4
+      data :last_descriptor_number,                  UInt, 4
+      data :iso_639_language_code,           LanguageCode, 24
+      data :length_of_items,                         UInt, 8
+      SPEND var(:length_of_items) * 8, :items do
+        data :item_description_length,               UInt, 8
+        data :item_description_char, Appendix::ARIBString, var(:item_description_length) * 8
+        data :item_length,                           UInt, 8
+        data :item_char,             Appendix::ARIBString, var(:item_length) * 8
+      end
+      data :text_length,                             UInt, 8
+      data :text_char,               Appendix::ARIBString, var(:text_length) * 8
+    end
+  end
 
   # 6.2.8 リンク記述子 (Linkage descriptor)
 
@@ -332,6 +349,7 @@ module M2TSParser
       0x46 => BouquetNameDescriptor,
       0x49 => CountryAvailabilityDescriptor,
       0x4d => ShortEventDescriptor,
+      0x4e => ExtendedEventDescriptor,
       0x50 => ComponentDescriptor,
       0x53 => CAIdentifierDescriptor,
       0x54 => ContentDescriptor,

@@ -19,4 +19,5 @@ module M2TSParser
   require LIB_ROOT + '/m2ts_parser/version'
   Dir::glob(LIB_ROOT + '/m2ts_parser/appendix/*.rb').each{|f| require f}
   DEF_FILES.each{|file_name| require LIB_ROOT + '/m2ts_parser/' + file_name}
+  Dir::glob(LIB_ROOT + '/m2ts_parser/application/*.rb').each{|f| require f}
 end
