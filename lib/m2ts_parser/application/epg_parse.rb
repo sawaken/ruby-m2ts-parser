@@ -38,11 +38,11 @@ module M2TSParser
 
           event_name: event.descriptors
             .select{|d| d.is_a? ShortEventDescriptor}
-            .map{|d| d.event_name.content_description},
+            .map{|d| d.event_name ? d.event_name.content_description : ""},
 
           text: event.descriptors
             .select{|d| d.is_a? ShortEventDescriptor}
-            .map{|d| d.text.content_description},
+            .map{|d| d.text ? d.text.content_description : ""},
 
           extended_text: event.descriptors
             .select{|d| d.is_a? ExtendedEventDescriptor}
