@@ -1,0 +1,84 @@
+#!/usr/bin/env ruby
+#-*- mode:ruby -*-
+
+require './struct_def_parser.rb'
+
+p = TSDefParser.structure.parse(STDIN.read)
+
+def fix_type(s, h)
+  case s[:kind]
+  when :data
+    s[:type] = h[s[:type]] if h[s[:type]]
+  when :if, :else, :struct, :for
+    s[:ch].each{|c| fix_type(c, h)}
+  end
+end
+
+def len(s, k, d, inc)
+  case s[:kind]
+  when :data
+    s[k].length + d * 2
+  when :if, :else, :struct, :for
+    s[:ch].map{|c| len(c, k, d + inc, inc)}.max
+  when :strname
+    0
+  end
+end
+
+def fix_len(s, k, d, l, inc)
+  case s[:kind]
+  when :data
+    diff = l - (s[k].length + d * 2)
+    s[k] << " " * diff
+  when :if, :else, :struct, :for
+    s[:ch].each{|c| fix_len(c, k, d + inc, l, inc)}
+  end
+end
+
+def camelize(str)
+  str.gsub(/_([a-zA-Z])/){"#{$1.upcase}"}.gsub(/^([a-z])/){"#{$1.upcase}"}
+end
+
+def putts(d, str)
+  puts "#{" " * (d*2)}#{str}"
+end
+
+def print(s, d)
+  case s[:kind]
+  when :data
+    putts d, "data :#{s[:name]}, #{s[:type]}, #{s[:bits]}"
+  when :struct
+    putts d, "class #{camelize(s[:name])} < BinaryParser::TemplateBase"
+    putts d, "  Def do"
+    s[:ch].each{|c| print(c, d + 2)}
+    putts d, "  end"
+    putts d, "end"
+  when :for
+    putts d, "SPEND var(:v) * 8, :v do"
+    s[:ch].each{|c| print(c, d + 1)}
+    putts d, "end"
+  when :if
+    estr = s[:exps].map{|e| "#{e[:left]} == 0b#{e[:right]}"}.join(" || ")
+    putts d, "IF E{#{estr}} do"
+    s[:ch].each{|c| print(c, d + 1)}
+    putts d, "end"
+  when :else
+    putts d, "IF E{ else } do"
+    s[:ch].each{|c| print(c, d + 1)}
+    putts d, "end"
+  when :strname
+    putts d, "#{s[:name]}()"
+  end
+end
+
+s = p.parsed
+fix_type(s, {
+           "uimsbf" => "UInt",
+           "bslbf"  => "UInt",
+           "rpchof" => "UInt",
+           "uimsnf" => "UInt",
+         })
+
+fix_len(s, :name, 0, len(s, :name, 0, 1), 1)
+fix_len(s, :type, 0, len(s, :type, 0, 0), 0)
+print(s, 0)
