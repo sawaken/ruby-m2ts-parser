@@ -322,7 +322,13 @@ module M2TSParser
   end
 
   # 6.2.16 ストリーム識別記述子 (Stream identifier descriptor)
-
+  class StreamIdentifierDescriptor < BinaryParser::TemplateBase
+    Def do
+      data :descriptor_tag,                        UInt, 8
+      data :descriptor_length,                     UInt, 8
+      data :component_tag,                         UInt, 8  
+    end
+  end
 
   # 6.2.17 スタッフ記述子 (Stuffing descriptor)
 

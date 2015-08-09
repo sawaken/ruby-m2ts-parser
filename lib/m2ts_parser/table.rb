@@ -2,6 +2,7 @@
 
 # ARIB-STD-B10 第2部 (v4_9), 5.2項に従うテーブルの定義
 
+
 module M2TSParser
   class Table < BinaryParser::TemplateBase
     include Appendix::CRC32Decoder
@@ -9,12 +10,71 @@ module M2TSParser
 
   # 5.2.1 プログラムアソシエーションテーブル (PAT) (Program Association Table)
   # * ISO/IEC 13818-1(22), 2.4.4項
+  # 内容は、{service_id => PMTのPID}の情報
+  class ProgramAssociationSection < Table
+    Def do
+      data :table_id,                 UInt, 8
+      data :section_syntax_indicator, UInt, 1
+      data :zero,                     UInt, 1
+      data :reserved1,                UInt, 2
+      data :section_length,           UInt, 12
+      data :transport_stream_id,      UInt, 16
+      data :reserved2,                UInt, 2
+      data :version_number,           UInt, 5
+      data :current_next_indicator,   UInt, 1
+      data :section_number,           UInt, 8
+      data :last_section_number,      UInt, 8
+      SPEND var(:section_length) * 8 - 40 - 32, :mapping do
+        data :program_number,         UInt, 16 # = service_id
+        data :reserved,               UInt, 3
+        IF E{program_number == 0} do
+          data :network_PID,          UInt, 13
+        end
+        IF E{program_number != 0} do
+          data :program_map_PID,      UInt, 13
+        end
+      end
+      data :crc_32,                   UInt, 32
+    end
+  end
 
   # 5.2.2 限定受信テーブル (CAT) (Conditional Access Table)
   # * ISO/IEC 13818-1(22), 2.4.4項
 
   # 5.2.3 プログラムマップテーブル (PMT) (Program Map)
   # * ISO/IEC 13818-1(22), 2.4.4項
+  class ProgramMapSection < Table
+    Def do
+      data :table_id                , UInt, 8
+      data :section_syntax_indicator, UInt, 1  # shall be 1
+      data :zero                    , UInt, 1
+      data :reserved0               , UInt, 2
+      data :section_length          , UInt, 12
+      data :program_number          , UInt, 16
+      data :reserved1               , UInt, 2
+      data :version_number          , UInt, 5
+      data :current_next_indicator  , UInt, 1  # 1 => section is valid, 0 => invalid
+      data :section_number          , UInt, 8  # shall be 0x00
+      data :last_section_number     , UInt, 8  # shall be 0x00
+      data :reserved2               , UInt, 3
+      data :PCR_PID                 , UInt, 13 # 0x1FFFなら無し(PCRはProgram Clock Referenceの略。ストリームの同期に使う。)
+      data :reserved3               , UInt, 4
+      data :program_info_length     , UInt, 12
+
+      SPEND var(:program_info_length) * 8, :descriptors, Descriptor
+
+      SPEND var(:section_length) * 8 - (72 + len(:descriptors)) - 32, :streams do
+        data :stream_type           , UInt, 8
+        data :reserved0             , UInt, 3
+        data :elementary_PID        , UInt, 13
+        data :reserved1             , UInt, 4
+        data :ES_info_length        , UInt, 12
+        SPEND var(:ES_info_length) * 8, :descriptors, Descriptor
+      end
+
+      data :CRC_32                  , UInt, 32
+    end
+  end
 
   # 5.2.4 ネットワーク情報テーブル (NIT) (Network Information Table)
 
@@ -104,6 +164,10 @@ module M2TSParser
       # ARIB STD-B10 第2部 表5－2 「テーブルID の割当および送出の基準」による定義
       def self.TableMapping(table_id)
         case table_id
+        when 0x00
+          ProgramAssociationSection
+        when 0x02
+          ProgramMapSection
         when 0x4e, 0x4f, 0x50..0x5f, 0x60..0x6f
           EventInformationSection
         else
